@@ -1,74 +1,69 @@
 package org.example;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.time.Duration;
-
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 public class LoginTest {
 
-    public  OrderPageTest orderPageTest;
+    public org.example.OrderPage orderPage;
+    public org.example.MainPage mainPage;
     //public  ChromeDriver driver;
     public FirefoxDriver driver;
+    String url = "https://qa-scooter.praktikum-services.ru/";
 
 
     @Before
     public void openMainPage() {
         //System.setProperty("webdriver.chrome.driver","C:\\tools\\chromedriver\\chromedriver.exe");
-         //driver = new ChromeDriver();
-        System.setProperty("webdriver.geckodriver.driver","C:\\tools\\geckodriver\\geckodriver.exe");
+        //driver = new ChromeDriver();
+        System.setProperty("webdriver.geckodriver.driver", "C:\\tools\\geckodriver\\geckodriver.exe");
         driver = new FirefoxDriver();
-        orderPageTest  = new OrderPageTest(driver);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        orderPage = new org.example.OrderPage(driver);
+        mainPage = new org.example.MainPage(driver);
         driver.manage().window().maximize();
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.get("https://qa-scooter.praktikum-services.ru/");
+        driver.get(url);
     }
 
 
     @Test // Тестовый сценарий для "ЗАКАЗ САМОКАТА"
-    public  void orderAuthorisationTest() throws InterruptedException {
-        //Нажать на кнопку ЗАКАЗАТЬ №2
-        WebElement element = driver.findElement
-                (By.xpath(".//*[@id='root']/div/div[1]/div[4]/div[2]/div[5]/button"));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
-        Thread.sleep(2000);
-        orderPageTest.pushOrderButtonTwo();
+    public void orderAuthorisationTest() throws InterruptedException {
+        //Нажать на кнопку ЗАКАЗАТЬ ВВЕРХУ HEADER
+        orderPage.pushButtonHeader();
         //АВТОРИЗАЦИЯ
-        orderPageTest.login("Сабина","Бадеева","Охотный ряд");
-        Thread.sleep(2000);
-
+        orderPage.login("Сабина", "Бадеева", "Охотный ряд");
         //Выбор СТАНЦИИ МЕТРО
-        orderPageTest.choiceMetroSt();
-        List<WebElement> elements = driver.findElements(By.xpath(".//li"));
-        driver.findElement(By.xpath(".//li[@data-value='3']")).click();
-        System.out.println(elements.size());
+        orderPage.choiceMetro();
         //Ввод НОМЕРА ТЕЛ
-        orderPageTest.inputTelNumber("+79001112233");
-        Thread.sleep(2000);
-        orderPageTest.setNextButton();
+        orderPage.inputTelNumber("+79001112233");
+        //Ожидание ЗАГРУЗКИ ДАННЫХ
+        orderPage.waitForLoadProfileData();
+        orderPage.setNextButton();
         //Аренда и выбор Самоката
-        orderPageTest.clickCalendar();
-        orderPageTest.clickDropDownRental();
-        Thread.sleep(2000);
-        orderPageTest.clickCheckBoxColorScooter();
-        orderPageTest.fillCommentForCourier("Привезти до 12 дня");
-        Thread.sleep(2000);
-        orderPageTest.clickGetOrder();
-        Thread.sleep(2000);
-        orderPageTest.clickButtonOrderYes();
+        //Выбор ДАТЫ
+        orderPage.choiceDataCalendarDeliverField("13.", "12.", "2022");
+        //Выбор ДНЯ
+        orderPage.clickDropDownRental();
+        //Выбор ЦВЕТА САМОКАТА
+        orderPage.clickCheckBoxColorScooter();
+        //КОММЕНТАРИЙ
+        orderPage.fillCommentForCourier("Привезти до 12 дня");
+        //Ожидание ЗАГРУЗКИ ДАННЫХ
+        orderPage.waitForLoadOrderData();
+        //НАЖАТЬ кнопку ЗАКАЗАТЬ
+        orderPage.clickGetOrder();
+        orderPage.clickButtonOrderYes();
+
         //ПРОВЕРКА СТАТУСА ЗАКАЗА
         new WebDriverWait(driver, Duration.ofSeconds(3))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.className("Order_ModalHeader__3FDaJ")));
@@ -77,6 +72,7 @@ public class LoginTest {
         Assert.assertTrue("Text not found!", orderElement.contains(textOrderElement));
 
     }
+
     @After
     public void quitDriver() {
         driver.manage().deleteAllCookies();

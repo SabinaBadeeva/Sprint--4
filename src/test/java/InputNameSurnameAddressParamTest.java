@@ -1,4 +1,4 @@
-import org.example.OrderPageTest;
+import org.example.OrderPage;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -6,6 +6,7 @@ import org.junit.runners.Parameterized;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+
 import java.time.Duration;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 public class InputNameSurnameAddressParamTest {
     //public  ChromeDriver driver;
     public FirefoxDriver driver;
-    public OrderPageTest orderPageTest;
+    public OrderPage orderPage;
     private final String userName;
     private final String secondName;
     private final String address;
@@ -39,7 +40,7 @@ public class InputNameSurnameAddressParamTest {
         //driver = new ChromeDriver();
         System.setProperty("webdriver.geckodriver.driver","C:\\tools\\geckodriver\\geckodriver.exe");
         driver = new FirefoxDriver();
-        orderPageTest = new OrderPageTest(driver);
+        orderPage = new OrderPage(driver);
         driver.manage().window().maximize();
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
@@ -57,16 +58,16 @@ public class InputNameSurnameAddressParamTest {
     }
     @Test
     public void inputDataFields() throws InterruptedException {
-        orderPageTest.setUsername(userName);
-        orderPageTest.setSecondNameField(secondName);
-        orderPageTest.setAddressField(address);
+        orderPage.setUsername(userName);
+        orderPage.setSecondNameField(secondName);
+        orderPage.setAddressField(address);
         Thread.sleep(2000);
-        orderPageTest.choiceMetroSt();
-        driver.findElement(By.tagName("li")).click();
-        orderPageTest.inputTelNumber(telNumber);
+        orderPage.choiceMetro();
+        orderPage.inputTelNumber(telNumber);
         Thread.sleep(2000);
-        orderPageTest.setNextButton();
+        orderPage.setNextButton();
 
+        //Проверяем,что нашелся  элемент метро
         List<WebElement> elements = driver.findElements(By.tagName("li"));
         for (WebElement ele : elements) {
             assertEquals( isLoggedPass, ele.getText().contains(metroStation));
